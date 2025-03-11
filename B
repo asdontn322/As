@@ -1,0 +1,103 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from neuralintents import GenericAssistant
+import pandas_datareader as web
+import mplfinance as mpf
+import datetime as dt
+import pickle
+import sys
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend-backend communication
+
+# Load portfolio
+try:
+    with open('portfolio.pkl', 'rb') as f:
+        portfolio = pickle.load(f)
+except FileNotFoundError:
+    portfolio = {}
+
+# Save portfolio
+def save_portfolio():
+    with open('portfolio.pkl', 'wb') as f:
+        pickle.dump(portfolio, f)
+
+# Define functions
+def add_portfolio(ticker, amount):
+    if ticker in portfolio.keys():
+        portfolio[ticker] += int(amount)
+    else:
+        portfolio[ticker] = int(amount)
+    save_portfolio()
+    return f"Added {amount} shares of {ticker} to your portfolio."
+
+def remove_portfolio(ticker, amount):
+    if ticker in portfolio.keys():
+        if int(amount) <= portfolio[ticker]:
+            portfolio[ticker] -= int(amount)
+            save_portfolio()
+            return f"Removed {amount} shares of {ticker} from your portfolio."
+        else:
+            return "You don't have enough shares!"
+    else:
+        return f"You don't own any shares of {ticker}."
+
+def show_portfolio():
+    return portfolio
+
+def portfolio_worth():
+    total = 0
+    for ticker, shares in portfolio.items():
+        data = web.DataReader(ticker, 'yahoo')
+        price = data['Close'].iloc[-1]
+        total += price * shares
+    return f"Your portfolio is worth {total:.2f} INR."
+
+def portfolio_gains(starting_date):
+    sum_now = 0
+    sum_then = 0
+    try:
+        for ticker, shares in portfolio.items():
+            data = web.DataReader(ticker, 'yahoo')
+            price_now = data['Close'].iloc[-1]
+            price_then = data.loc[data.index == starting_date]['Close'].values[0]
+            sum_now += price_now * shares
+            sum_then += price_then * shares
+        return f"Relative Gains: {((sum_now - sum_then) / sum_then) * 100:.2f}% | Absolute Gains: {sum_now - sum_then:.2f} INR"
+    except IndexError:
+        return "There was no trading on this day!"
+
+def plot_chart(ticker, starting_date):
+    start = dt.datetime.strptime(starting_date, "%d/%m/%Y")
+    end = dt.datetime.now()
+    data = web.DataReader(ticker, 'yahoo', start, end)
+    mpf.plot(data, type='candle', style='charles', volume=True)
+    return f"Plotted chart for {ticker}."
+
+# Define intents and mappings
+mappings = {
+    'add_portfolio': add_portfolio,
+    'remove_portfolio': remove_portfolio,
+    'show_portfolio': show_portfolio,
+    'portfolio_worth': portfolio_worth,
+    'portfolio_gains': portfolio_gains,
+    'plot_chart': plot_chart
+}
+
+assistant = GenericAssistant('intents.json', mappings)
+assistant.train_model()
+
+# API Endpoints
+@app.route('/ask', methods=['POST'])
+def ask():
+    data = request.json
+    message = data.get('message')
+    response = assistant.request(message)
+    return jsonify({'response': response})
+
+@app.route('/portfolio', methods=['GET'])
+def get_portfolio():
+    return jsonify(portfolio)
+
+if __name__ == '__main__':
+    app.run(debug=True)
