@@ -1,0 +1,1 @@
+pip install Flask flask-cors neuralintents pandas_datareader mplfinance matplotlib pickle5
