@@ -1,0 +1,68 @@
+# Legacy Automation - Windows Setup Guide
+
+This project automates downloading an Excel file from a legacy desktop-only website, uploading it to SharePoint, and ingesting it into Google Cloud Platform (GCP).
+
+---
+
+## 🖥️ Prerequisites
+
+1. **Windows 10/11**
+2. **Python 3.10+**
+3. **Google Chrome** installed
+4. **Google ChromeDriver** matching your Chrome version:
+   - Download: https://sites.google.com/a/chromium.org/chromedriver/downloads
+   - Place `chromedriver.exe` in the `legacy_automation/` folder
+
+---
+
+## 🧩 Installation Steps
+
+Open Command Prompt
+
+cd C:\Users\YourName\Documents\legacy_automation
+
+
+
+
+### 1. Extract Project
+
+Unzip `legacy_automation.zip` to a folder, e.g.:
+
+```sh
+C:\Users\YourName\Documents\legacy_automation
+
+Setup Python Virtual Environment (Optional but Recommended)
+python -m venv venv
+venv\Scripts\activate
+
+Install Dependencies
+pip install -r requirements.txt
+
+
+Configure .env File
+Create a .env file in the same folder:
+
+env
+Copy
+Edit
+# SharePoint Credentials
+SP_USERNAME=your_email@example.com
+SP_PASSWORD=your_password
+
+# SharePoint Info
+SHAREPOINT_SITE=https://yourcompany.sharepoint.com/sites/yoursite
+SHAREPOINT_FOLDER=Shared Documents/ExcelUploads
+
+# GCP Info
+GCP_BUCKET=your-gcp-bucket
+GCP_CREDENTIALS_JSON=path\to\your\gcp_credentials.json
+
+# Website Login Info
+LEGACY_USERNAME=your_legacy_username
+LEGACY_PASSWORD=your_legacy_password
+
+# same as credentials.json configure to google cloud storage 
+
+Running the Automation
+# open the run
+ run_automation.bat
