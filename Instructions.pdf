@@ -1,0 +1,348 @@
+Automation Script for Excel Download and Upload
+
+This Python project automates the process of downloading an Excel file from a legacy website, uploading it to a SharePoint document library, and uploading it to a Google Cloud Platform (GCP) storage bucket. The project uses Selenium for web automation, Office365-REST-Python-Client for SharePoint integration, and the Google Cloud Storage SDK for GCP interactions.
+
+Prerequisites
+
+
+
+
+
+Python: Version 3.8 or later with pip.
+
+
+
+Google Chrome: Installed and updated for Selenium automation.
+
+
+
+SharePoint Access: Valid credentials and access to a SharePoint document library.
+
+
+
+GCP Access: A service account with a JSON key file and access to a storage bucket.
+
+
+
+Text Editor/IDE: VS Code, PyCharm, or similar for editing code.
+
+Project Structure
+
+AutomationProject/
+├── download_folder/          # Directory for downloaded Excel files
+├── logs/                     # Directory for automation.log
+├── .env                      # Environment variables (not included in git)
+├── main.py                   # Main script to orchestrate automation steps
+├── automate.py               # Script to download Excel file using Selenium
+├── sharepoint.py             # Script to upload file to SharePoint
+├── upload_to_sharepoint.py   # Wrapper for SharePoint upload (optional)
+├── upload_to_gcp.py          # Script to upload file to GCP
+├── requirements.txt          # Python dependencies
+└── README.md                 # Project documentation
+|__ credients.json            #google cloud( you have to darg and insert to)
+Setup Instructions (Windows)
+
+1. Install Python
+
+
+
+
+
+Download Python 3.8+ from python.org.
+
+
+
+During installation:
+
+
+
+
+
+Check "Add Python to PATH."
+
+
+
+Ensure pip is included.
+
+
+
+Verify installation:
+
+python --version
+pip --version
+
+2. Clone or Create Project Directory
+
+
+
+
+
+Create a project directory, e.g., C:\AutomationProject.
+
+
+
+Copy the provided scripts (main.py, automate.py, sharepoint.py, upload_to_sharepoint.py, upload_to_gcp.py, requirements.txt) into this directory.
+
+
+
+Create subdirectories:
+
+mkdir download_folder logs
+
+3. Install Dependencies
+
+
+
+
+
+Ensure requirements.txt contains:
+
+selenium
+python-dotenv
+Office365-REST-Python-Client
+google-cloud-storage
+webdriver-manager
+
+
+
+Install dependencies:
+
+cd C:\AutomationProject
+pip install -r requirements.txt
+
+4. Configure ChromeDriver
+
+
+
+
+
+The webdriver-manager package (included in requirements.txt) automatically manages ChromeDriver. No manual download is required.
+
+
+
+Ensure automate.py uses webdriver-manager (already updated in the script).
+
+5. Configure Environment Variables
+
+
+
+
+
+Create a .env file in C:\AutomationProject with the following:
+
+SHAREPOINT_SITE_URL=https://yourdomain.sharepoint.com/sites/yoursite
+SHAREPOINT_USERNAME=your_username@yourdomain.com
+SHAREPOINT_PASSWORD=your_password
+SHAREPOINT_DOC_LIB=Shared Documents
+SHAREPOINT_TARGET_FOLDER=AutomationUploads
+GCP_BUCKET_NAME=your-gcp-bucket-name
+GCP_CREDENTIALS_PATH=C:\AutomationProject\credentials.json
+
+
+
+SharePoint:
+
+
+
+
+
+Replace SHAREPOINT_SITE_URL, SHAREPOINT_USERNAME, SHAREPOINT_PASSWORD, SHAREPOINT_DOC_LIB, and SHAREPOINT_TARGET_FOLDER with your SharePoint details.
+
+
+
+Ensure your account has access to the document library and folder.
+
+
+
+GCP:
+
+
+
+
+
+Create a service account in Google Cloud Console with Storage Admin permissions.
+
+
+
+Download the JSON key file (e.g., credentials.json) and place it in C:\AutomationProject.
+
+
+
+Update GCP_CREDENTIALS_PATH to the absolute path of the JSON file (use backslashes, e.g., C:\\AutomationProject\\credentials.json).
+
+
+
+Set GCP_BUCKET_NAME to your GCP storage bucket name.
+
+6. Update Scripts
+
+The scripts have been updated to handle errors identified in the log file (automation.log). Ensure the following changes are applied:
+
+automate.py
+
+
+
+
+
+Simplified to directly download the Excel file due to issues with the original URL and navigation.
+
+
+
+Uses webdriver-manager for ChromeDriver.
+
+sharepoint.py
+
+
+
+
+
+Added validation for environment variables to prevent 'NoneType' errors.
+
+
+
+Ensures proper authentication and file upload.
+
+upload_to_gcp.py
+
+
+
+
+
+Added error handling for missing credentials or files.
+
+
+
+Validates GCP bucket access.
+
+main.py
+
+
+
+
+
+Updated to propagate errors and capture subprocess output for better debugging.
+
+upload_to_sharepoint.py
+
+
+
+
+
+Optional wrapper for sharepoint.py. Can be removed if not needed.
+
+7. Run the Project
+
+
+
+
+
+Open a command prompt in the project directory:
+
+cd C:\AutomationProject
+
+
+
+Run the main script:
+
+python main.py
+
+
+
+Monitor the logs/automation.log file for execution details and errors.
+
+8. Troubleshooting
+
+
+
+
+
+Selenium Errors:
+
+
+
+
+
+If net::ERR_NAME_NOT_RESOLVED occurs, verify the URL in automate.py or check internet connectivity.
+
+
+
+Ensure Chrome is updated.
+
+
+
+SharePoint Errors:
+
+
+
+
+
+Verify credentials and permissions.
+
+
+
+Confirm the document library and target folder exist.
+
+
+
+GCP Errors:
+
+
+
+
+
+Ensure the service account has Storage Object Admin permissions.
+
+
+
+Check the bucket name and credentials.json file.
+
+
+
+File Not Found:
+
+
+
+
+
+Ensure download_folder contains the downloaded file.
+
+
+
+Verify paths in .env are correct (use absolute paths with backslashes).
+
+
+
+Check logs/automation.log for detailed error messages.
+
+9. Optional: Virtual Environment
+
+To isolate dependencies:
+
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+
+Notes
+
+
+
+
+
+The URL in automate.py (https://the-internet.herokuapp.com/download/TestData.xlsx) may be invalid. Replace it with the actual website URL and adjust navigation logic if needed.
+
+
+
+The upload_to_sharepoint.py script is redundant if sharepoint.py is used directly. Consider removing it.
+
+
+
+Regularly check automation.log for debugging.
+
+
+
+Ensure Windows firewall or antivirus does not block ChromeDriver or network requests.
+
+License
+
+This project is for internal use and not licensed for public distribution.
