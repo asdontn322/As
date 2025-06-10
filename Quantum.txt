@@ -1,0 +1,460 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar, ScatterChart, Scatter } from 'recharts';
+import { TrendingUp, TrendingDown, Activity, Zap, Brain, Settings, Play, Pause, BarChart3, PieChart, Target, AlertTriangle } from 'lucide-react';
+
+const QuantumAITradingDashboard = () => {
+  const [isActive, setIsActive] = useState(false);
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1H');
+  const [selectedModel, setSelectedModel] = useState('QANN');
+  const [marketData, setMarketData] = useState([]);
+  const [predictions, setPredictions] = useState([]);
+  const [portfolioData, setPortfolioData] = useState([]);
+  const [quantumMetrics, setQuantumMetrics] = useState({});
+  const [mlMetrics, setMLMetrics] = useState({});
+  const [activeTab, setActiveTab] = useState('overview');
+  const intervalRef = useRef(null);
+
+  // Generate realistic market data
+  const generateMarketData = () => {
+    const now = Date.now();
+    const data = [];
+    let price = 45000 + Math.random() * 10000;
+    
+    for (let i = 0; i < 100; i++) {
+      const timestamp = now - (99 - i) * 60000;
+      price += (Math.random() - 0.5) * 1000;
+      const volume = 1000000 + Math.random() * 5000000;
+      
+      data.push({
+        time: new Date(timestamp).toLocaleTimeString(),
+        timestamp,
+        price: Math.max(price, 30000),
+        volume,
+        sma: price * (0.98 + Math.random() * 0.04),
+        ema: price * (0.985 + Math.random() * 0.03),
+        bollinger_upper: price * 1.02,
+        bollinger_lower: price * 0.98,
+        rsi: 30 + Math.random() * 40,
+        macd: (Math.random() - 0.5) * 100
+      });
+    }
+    return data;
+  };
+
+  // Generate quantum predictions
+  const generatePredictions = () => {
+    const data = [];
+    let basePrice = 50000;
+    
+    for (let i = 0; i < 24; i++) {
+      basePrice += (Math.random() - 0.5) * 2000;
+      data.push({
+        hour: i,
+        quantum_prediction: Math.max(basePrice, 30000),
+        classical_prediction: Math.max(basePrice + (Math.random() - 0.5) * 1000, 30000),
+        confidence: 0.7 + Math.random() * 0.25,
+        entropy: Math.random() * 0.5
+      });
+    }
+    return data;
+  };
+
+  // Generate portfolio data
+  const generatePortfolioData = () => {
+    return [
+      { name: 'BTC', value: 45.5, pnl: 12.5, color: '#F7931A' },
+      { name: 'ETH', value: 28.3, pnl: -3.2, color: '#627EEA' },
+      { name: 'ADA', value: 15.2, pnl: 8.7, color: '#0033AD' },
+      { name: 'SOL', value: 11.0, pnl: 15.3, color: '#9945FF' }
+    ];
+  };
+
+  // Generate quantum metrics
+  const generateQuantumMetrics = () => {
+    return {
+      entanglement_strength: 0.75 + Math.random() * 0.2,
+      coherence_time: 10 + Math.random() * 5,
+      quantum_advantage: 1.15 + Math.random() * 0.3,
+      superposition_states: Math.floor(8 + Math.random() * 8),
+      measurement_accuracy: 0.85 + Math.random() * 0.1,
+      decoherence_rate: Math.random() * 0.1
+    };
+  };
+
+  // Generate ML metrics
+  const generateMLMetrics = () => {
+    return {
+      model_accuracy: 0.82 + Math.random() * 0.15,
+      loss_function: Math.random() * 0.1,
+      learning_rate: 0.001 + Math.random() * 0.009,
+      epochs_completed: Math.floor(50 + Math.random() * 200),
+      feature_importance: Math.random(),
+      cross_validation_score: 0.78 + Math.random() * 0.18
+    };
+  };
+
+  useEffect(() => {
+    setMarketData(generateMarketData());
+    setPredictions(generatePredictions());
+    setPortfolioData(generatePortfolioData());
+    setQuantumMetrics(generateQuantumMetrics());
+    setMLMetrics(generateMLMetrics());
+
+    if (isActive) {
+      intervalRef.current = setInterval(() => {
+        setMarketData(generateMarketData());
+        setQuantumMetrics(generateQuantumMetrics());
+        setMLMetrics(generateMLMetrics());
+      }, 2000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isActive]);
+
+  const MetricCard = ({ title, value, change, icon: Icon, color = "blue" }) => (
+    <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-gray-600 transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-lg bg-${color}-500/10`}>
+          <Icon className={`h-6 w-6 text-${color}-400`} />
+        </div>
+        <div className={`flex items-center space-x-1 ${change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          {change >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+          <span className="text-sm font-medium">{Math.abs(change).toFixed(2)}%</span>
+        </div>
+      </div>
+      <h3 className="text-gray-400 text-sm font-medium mb-1">{title}</h3>
+      <p className="text-2xl font-bold text-white">{value}</p>
+    </div>
+  );
+
+  const QuantumMetricCard = ({ title, value, unit, description }) => (
+    <div className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 p-4 rounded-lg border border-purple-500/30">
+      <h4 className="text-purple-300 text-sm font-medium mb-2">{title}</h4>
+      <div className="flex items-baseline space-x-2">
+        <span className="text-2xl font-bold text-white">{typeof value === 'number' ? value.toFixed(3) : value}</span>
+        <span className="text-purple-400 text-sm">{unit}</span>
+      </div>
+      <p className="text-gray-400 text-xs mt-1">{description}</p>
+    </div>
+  );
+
+  const currentPrice = marketData.length > 0 ? marketData[marketData.length - 1].price : 0;
+  const priceChange = marketData.length > 1 ? 
+    ((currentPrice - marketData[marketData.length - 2].price) / marketData[marketData.length - 2].price) * 100 : 0;
+
+  return (
+    <div className="min-h-screen bg-black text-white p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
+              <Brain className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                Quantum AI Trading
+              </h1>
+              <p className="text-gray-400">Advanced ML & Quantum Computing Platform</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <select 
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white"
+          >
+            <option value="QANN">Quantum Neural Network</option>
+            <option value="QRL">Quantum Reinforcement Learning</option>
+            <option value="QSVM">Quantum Support Vector Machine</option>
+            <option value="VQE">Variational Quantum Eigensolver</option>
+          </select>
+          <button
+            onClick={() => setIsActive(!isActive)}
+            className={`flex items-center space-x-2 px-6 py-2 rounded-lg font-medium transition-all duration-300 ${
+              isActive 
+                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
+          >
+            {isActive ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <span>{isActive ? 'Stop Trading' : 'Start Trading'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="flex space-x-1 mb-8 bg-gray-900 p-1 rounded-lg">
+        {[
+          { id: 'overview', label: 'Overview', icon: BarChart3 },
+          { id: 'quantum', label: 'Quantum Engine', icon: Zap },
+          { id: 'ml', label: 'ML Models', icon: Brain },
+          { id: 'portfolio', label: 'Portfolio', icon: PieChart }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+              activeTab === tab.id
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+            }`}
+          >
+            <tab.icon className="h-4 w-4" />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-8">
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <MetricCard
+              title="BTC/USD Price"
+              value={`$${currentPrice.toLocaleString()}`}
+              change={priceChange}
+              icon={TrendingUp}
+              color="blue"
+            />
+            <MetricCard
+              title="Portfolio Value"
+              value="$2.4M"
+              change={8.5}
+              icon={Target}
+              color="green"
+            />
+            <MetricCard
+              title="AI Accuracy"
+              value={`${(mlMetrics.model_accuracy * 100).toFixed(1)}%`}
+              change={2.3}
+              icon={Brain}
+              color="purple"
+            />
+            <MetricCard
+              title="Quantum Advantage"
+              value={`${quantumMetrics.quantum_advantage?.toFixed(2)}x`}
+              change={12.7}
+              icon={Zap}
+              color="yellow"
+            />
+          </div>
+
+          {/* Price Chart */}
+          <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Price Action & Predictions</h2>
+              <div className="flex space-x-2">
+                {['1M', '5M', '1H', '4H', '1D'].map(tf => (
+                  <button
+                    key={tf}
+                    onClick={() => setSelectedTimeframe(tf)}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      selectedTimeframe === tf
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={marketData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }} 
+                />
+                <Legend />
+                <Line type="monotone" dataKey="price" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="sma" stroke="#f59e0b" strokeWidth={1} dot={false} />
+                <Line type="monotone" dataKey="ema" stroke="#10b981" strokeWidth={1} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Predictions Chart */}
+          <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+            <h2 className="text-xl font-bold mb-6">AI Predictions (24h)</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={predictions}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="hour" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }} 
+                />
+                <Legend />
+                <Area type="monotone" dataKey="quantum_prediction" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.3} />
+                <Area type="monotone" dataKey="classical_prediction" stackId="2" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Quantum Engine Tab */}
+      {activeTab === 'quantum' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <QuantumMetricCard
+              title="Entanglement Strength"
+              value={quantumMetrics.entanglement_strength}
+              unit="α"
+              description="Quantum correlation strength between qubits"
+            />
+            <QuantumMetricCard
+              title="Coherence Time"
+              value={quantumMetrics.coherence_time}
+              unit="μs"
+              description="Quantum state preservation duration"
+            />
+            <QuantumMetricCard
+              title="Superposition States"
+              value={quantumMetrics.superposition_states}
+              unit="states"
+              description="Simultaneous quantum states processed"
+            />
+            <QuantumMetricCard
+              title="Quantum Advantage"
+              value={quantumMetrics.quantum_advantage}
+              unit="x"
+              description="Performance gain over classical algorithms"
+            />
+            <QuantumMetricCard
+              title="Measurement Accuracy"
+              value={quantumMetrics.measurement_accuracy}
+              unit="%"
+              description="Quantum measurement precision"
+            />
+            <QuantumMetricCard
+              title="Decoherence Rate"
+              value={quantumMetrics.decoherence_rate}
+              unit="Hz"
+              description="Rate of quantum state decay"
+            />
+          </div>
+
+          <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+            <h2 className="text-xl font-bold mb-6">Quantum Circuit Visualization</h2>
+            <div className="bg-black p-8 rounded-lg border-2 border-purple-500/30">
+              <div className="text-center text-purple-300 mb-4">
+                <h3 className="text-lg font-semibold">Quantum Neural Network Architecture</h3>
+              </div>
+              <div className="flex justify-center items-center space-x-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-white font-bold">|0⟩</span>
+                  </div>
+                  <p className="text-sm text-gray-400">Input Qubit</p>
+                </div>
+                <div className="flex space-x-4">
+                  {['H', 'RY', 'RZ', 'CX'].map((gate, idx) => (
+                    <div key={idx} className="text-center">
+                      <div className="w-12 h-12 bg-gray-800 border-2 border-purple-400 rounded flex items-center justify-center mb-2">
+                        <span className="text-purple-300 font-bold text-sm">{gate}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">Gate {idx + 1}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-blue-600 rounded-full flex items-center justify-center mb-2">
+                    <span className="text-white font-bold">M</span>
+                  </div>
+                  <p className="text-sm text-gray-400">Measurement</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ML Models Tab */}
+      {activeTab === 'ml' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 text-green-400">Model Performance</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Accuracy</span>
+                  <span className="text-white font-semibold">{(mlMetrics.model_accuracy * 100).toFixed(2)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Loss</span>
+                  <span className="text-white font-semibold">{mlMetrics.loss_function?.toFixed(4)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">CV Score</span>
+                  <span className="text-white font-semibold">{(mlMetrics.cross_validation_score * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 text-blue-400">Training Status</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Epochs</span>
+                  <span className="text-white font-semibold">{mlMetrics.epochs_completed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Learning Rate</span>
+                  <span className="text-white font-semibold">{mlMetrics.learning_rate?.toFixed(4)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Feature Importance</span>
+                  <span className="text-white font-semibold">{(mlMetrics.feature_importance * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4 text-purple-400">Model Selection</h3>
+              <div className="space-y-2">
+                {['LSTM', 'Transformer', 'GAN', 'CNN-LSTM'].map(model => (
+                  <div key={model} className="flex items-center justify-between p-2 bg-gray-800 rounded">
+                    <span className="text-gray-300">{model}</span>
+                    <span className="text-sm text-green-400">{(Math.random() * 0.2 + 0.8).toFixed(3)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-900 p-6 rounded-xl border border-gray-700">
+            <h2 className="text-xl font-bold mb-6">Model Comparison</h2>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={[
+                { model: 'QANN', accuracy: 0.92, precision: 0.89, recall: 0.85 },
+                { model: 'Classical NN', accuracy: 0.84, precision: 0.81, recall: 0.78 },
+                { model: 'Random Forest', accuracy: 0.79, precision: 0.76, recall: 0.73 },
+                { model: 'SVM', accuracy: 0.73, precision: 0.71, recall: 0.68 }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="model" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    b
